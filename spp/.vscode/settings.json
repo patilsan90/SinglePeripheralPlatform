@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "functional": "c",
+        "type_traits": "c",
+        "json_parser.c": "cpp",
+        "array": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp",
+        "initializer_list": "cpp"
+    }
+}
