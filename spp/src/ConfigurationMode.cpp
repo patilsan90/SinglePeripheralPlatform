@@ -6,47 +6,79 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiServer.h>
-#include <json_parser.h>
-#include "ConfigStorage.h"
+#include <JSONParser.h>
+#include <ConfigStorage.h>
+
 ESP8266WebServer config_server(1337);
 IPAddress apIP(10, 10, 10, 1); // Private network address: local & gateway
-
-String wifi_name;
-String wifi_psw;
-String room_name;
-int room_id;
-int owner_id;
-int house_id;
 
 static void handle_config_request()
 {
   //config_server.sendHeader("Connection", "close");
   //config_server.sendHeader("Access-Control-Allow-Origin", "*");
   //config_server.send(200, "text/plain", "New hello from esp8266!");
-  char input_buffer[100];
-  JSONParser json_parser;
-
+ 
   if (config_server.hasArg("plain") == true)
   {
+
+    String msg;
     String message = config_server.arg("plain");
     ConfigStorage *storage = new ConfigStorage;
     storage->saveConfiguration(message);
-    String msg = "{ \"response\":\"e_DEVICE_CONFIGURED\", \"message\": \"";
-    msg += WiFi.macAddress();
-    msg += "\"}";
-
-    config_server.send(200, "text/plain", msg);
 
     Serial.println("*********");
-
     Serial.println(message);
     Serial.println("*********");
-    Serial.println(msg);
-    Serial.println("*********");
 
-    // memset(input_buffer, '\0', sizeof(input_buffer));
-    // message.toCharArray(input_buffer, 100);
-    // Serial.println(json_parser.get_key(input_buffer,"Dev"));
+    Serial.println("*****PARSING START****");
+
+    JSONParser *parser = new JSONParser();
+    parser->parse(message);
+
+    Serial.println(parser->total_pairs);
+    int config_details_counter = 0;
+    for (int i = 0; i < parser->total_pairs; i++)
+    {
+      if (strcmp(parser->pairs[i].key, "owner_id"))
+      {
+        config_details_counter++;
+        storage->owner_id = parser->pairs[i].val;
+      }
+      else if (strcmp(parser->pairs[i].key, "transact_server_url"))
+      {
+        config_details_counter++;
+        storage->server_url = parser->pairs[i].val;
+      }
+      else if (strcmp(parser->pairs[i].key, "wifi_name"))
+      {
+        config_details_counter++;
+        storage->wifi_ssid = parser->pairs[i].val;
+      }
+      else if (strcmp(parser->pairs[i].key, "wifi_psw"))
+      {
+        config_details_counter++;
+        storage->wifi_psw = parser->pairs[i].val;
+      }
+
+      Serial.print(parser->pairs[i].key);
+      Serial.print(parser->pairs[i].val);
+      Serial.println("  :: ");
+    }
+    Serial.println("******PARSING DONE ......");
+
+    if (config_details_counter < 4)
+    {
+      msg = "{ \"response\":\"e_DEVICE_CONFIGURED\", \"SUCCESS\": \"";
+      msg += WiFi.macAddress();
+      msg += "\"}";
+    }
+    else
+    {
+      msg = "{ \"response\":\"e_DEVICE_CONFIGURED\", \"INCOMLETE CONFIGUE INFORMATION\": \"";
+      msg += WiFi.macAddress();
+      msg += "\"}";
+    }
+    config_server.send(200, "text/plain", msg);
   }
   else
   {

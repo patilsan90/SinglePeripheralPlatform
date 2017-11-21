@@ -1,5 +1,5 @@
-#ifndef __SERVER_MODE__
-#define __SERVER_MODE__
+#ifndef __CONFIGURATION_MODE__
+#define __CONFIGURATION_MODE__
 
 #include <ESP8266WebServer.h>
 

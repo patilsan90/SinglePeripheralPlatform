@@ -2,7 +2,6 @@
 #include <ESP8266WebServer.h>
 #include <WiFiClient.h>
 #include <WiFiServer.h>
-#include <json_parser.h>
 #include <ConfigurationMode.h>
 #include <ConfigStorage.h>
 #include <ReceptionMode.h>

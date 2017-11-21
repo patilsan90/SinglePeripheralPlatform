@@ -5,7 +5,6 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiServer.h>
-#include <json_parser.h>
 #include <ReceptionMode.h>
 
 const char *ssid = "Techies2.4";

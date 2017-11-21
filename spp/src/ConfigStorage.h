@@ -5,7 +5,6 @@
 #include <ESP8266WebServer.h>
 #include <WiFiClient.h>
 #include <WiFiServer.h>
-#include <json_parser.h>
 #include <ConfigurationMode.h>
 
 //using namespace transact;
@@ -13,15 +12,15 @@
 class ConfigStorage
 {
 public:
-
   static char buffer[512];
   static int size;
-  char *ssid;
-  String wifi_ssid = "NO";
-  String wifi_psw = "NO";
-  String owner_id = "NO";
-  String house_id = "NO";
-  String room_id = "NO";
+  char *ssid = NULL;
+  char *wifi_ssid = NULL;
+  char *wifi_psw = NULL;
+  char *owner_id = NULL;
+  char *house_id = NULL;
+  char *room_id = NULL;
+  char *server_url = NULL;
 
   void loadConfiguration();
   void saveConfiguration(String inputBuffer);
