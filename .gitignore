@@ -1,4 +1,4 @@
 spp/.vscode/*
-.pioenvs
-.piolibdeps
-.vscode/c_cpp_properties.json
+spp/.pioenvs
+spp/.piolibdeps
+spp/.vscode/c_cpp_properties.json
