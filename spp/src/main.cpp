@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WiFiClient.h>
@@ -5,52 +6,143 @@
 #include <ConfigurationMode.h>
 #include <ConfigStorage.h>
 #include <ReceptionMode.h>
+#include <Peripheral.h>
+
+//#include <FirebaseArduino.h>
 
 void client_mode();
 void printWiFiStatus();
 void configure();
 
+#define PERIPHRAL_CONNECTION_STATUS_PIN (0)
+#define NO_ID ("NO_ID")
 
-int mode = 1;
+OPERATION_MODE mode;
 //mode 1 is AP mode
 // mode 0 will be normal mode
 
 ServerMode serverMode;
-ReceptionMode dataReceptionMode;
+ReceptionMode *dataReceptionMode = new ReceptionMode();
+static ConfigStorage *storage = new ConfigStorage();
+
+static Peripheral *per = new Peripheral(PERIPHRAL_CONNECTION_STATUS_PIN);
+void peripheralConnectedIntr();
+
+void sendPeripheralsListToServer();
+void gatherPeripherals();
+void updatePeripheralIDs();
+bool isGatherPeriList = true;
+
 void setup()
 {
-  pinMode(LED_BUILTIN, OUTPUT); // Initialize the LED_BUILTIN pin as an output
-  Serial.begin(19200);
-  mode = 1;
+  Serial.begin(115200);
+  delay(2000);
 
-  if (mode == 1)
+  pinMode(LED_BUILTIN, OUTPUT); // Initialize the LED_BUILTIN pin as an output
+  pinMode(PERIPHRAL_CONNECTION_STATUS_PIN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(PERIPHRAL_CONNECTION_STATUS_PIN), peripheralConnectedIntr, FALLING);
+
+  storage->loadConfiguration();
+
+  mode = storage->getOperarionMode();
+
+  delay(1000);
+  Serial.printf("WIFI SSID = %s \n", storage->wifi_ssid);
+  Serial.printf("WIFI PSW = %s \n", storage->wifi_psw);
+ // mode = e_CONFIG_MODE;
+
+  // TODO
+  // Below commented IF-ELSE is temporary just for testing mode purpose,
+  // need to uncomment it in future.
+
+  //if (mode == e_CONFIG_MODE)
   {
+    Serial.println("INIT in Config Mode");
     serverMode.init();
   }
-  else if (mode == 0)
+//  else if (mode == e_RECEPTION_MODE)
   {
-    dataReceptionMode.init();
+    serverMode.init();
+    Serial.println("INIT in Reception Mode");
+    dataReceptionMode->init(storage);
   }
 }
 
 // the loop function runs over and over again forever
-void loop()
+
+void peripheralConnectedIntr()
 {
-
-  if (mode == 1)
+  Serial.println("New Peripheral connected interrupt");
+  if (WiFi.status() == WL_CONNECTED)
   {
-    Serial.printf("Stations connected = %d\n", WiFi.softAPgetStationNum());
-
-    ConfigStorage cstorage;
-    cstorage.loadConfiguration();
-    serverMode.handleClient(); //Handle client requests
-    delay(3000);
-
-  }
-  else if (mode == 0)
-  {
-    dataReceptionMode.receiveCommand();
+    //gatherPeripherals();
+    //sendPeripheralsListToServer();
   }
 }
 
+void onReceptionMode();
+void loop()
+{
+  // if (mode == e_CONFIG_MODE)
+  {
+    Serial.println("Working in Config Mode");
+    Serial.printf("Stations connected = %d \n", WiFi.softAPgetStationNum());
+    serverMode.handleClient(); //Handle client requests
+    delay(2000);
+  }
+   //else if (mode == e_RECEPTION_MODE)
+  {
+    onReceptionMode();
+  }
+}
 
+void onReceptionMode()
+{
+  Serial.println("Working in Reception Mode");
+  Serial.printf("Server URL = %s \n", storage->server_url);
+ gatherPeripherals();
+  if (WiFi.status() == WL_CONNECTED && isGatherPeriList == true)
+  {
+    gatherPeripherals();
+    updatePeripheralIDs();
+    sendPeripheralsListToServer();
+  }
+
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    dataReceptionMode->updateLocalIPToServer();
+    String output = dataReceptionMode->getUpdates();
+    Serial.println("Output String :: " + output);
+  }
+
+  delay(2000);
+}
+
+void updatePeripheralIDs()
+{
+  if (strcmp(storage->peripheral_id, NO_ID) == 0)
+  {
+    // get new id from server and assign it to peripheral
+  }
+}
+
+void gatherPeripherals()
+{
+  //storage->peripheral_id = per->getDeviceID();
+  Serial.println(per->getDeviceID());
+  isGatherPeriList = false;
+}
+
+void sendPeripheralsListToServer()
+{
+
+  if (strcmp(storage->peripheral_id, (char *)NO_ID) == 0)
+  {
+    //need to assign peripheral device id;
+    // send type of device to server too.
+  }
+  else
+  {
+    //send this peripheral id to server
+  }
+}

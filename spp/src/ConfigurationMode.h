@@ -11,6 +11,8 @@ public:
   void init();
 
   void handleClient();
+
+  void closeAPMode();
 };
 
 #endif

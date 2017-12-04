@@ -2,16 +2,21 @@
 #define __RECEPTION_MODE__
 
 #include <ESP8266WebServer.h>
+#include <ConfigStorage.h>
 
 class ReceptionMode
 {
 public:
-  //void handle_config_request();
-  void init();
-
-  void receiveCommand();
+  void init(ConfigStorage *storage);
+  String getUpdates();
 
   void printWiFiStatus();
+  int updateLocalIPToServer();
+
+private:
+  bool is_peripheral_change;
+  String ipToString(IPAddress ip);
+  bool isIPChanged();
 };
 
 #endif

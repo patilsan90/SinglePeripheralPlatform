@@ -8,12 +8,15 @@
 
 void JSONParser ::parse(String input)
 {
-
-        char str[input.length() + 1];
-
+        char str[input.length()];
         memset(str, '\0', sizeof(char) * input.length());
         str[input.length() + 1] = '\0';
         input.toCharArray(str, input.length());
+        JSONParser ::parse(str);
+}
+
+void JSONParser ::parse(char str[])
+{
 
         int i = 0;
         int len = 0;

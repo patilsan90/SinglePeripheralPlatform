@@ -3,10 +3,12 @@
 #include <string.h>
 #include <ctype.h>
 #include <EEPROM.h>
+#include <JSONParser.h>
 #include <ConfigStorage.h>
 
 char ConfigStorage::buffer[512] = {};
 int ConfigStorage::size = 0;
+
 void ConfigStorage ::loadConfiguration()
 {
   EEPROM.begin(512);
@@ -15,29 +17,48 @@ void ConfigStorage ::loadConfiguration()
 
   int i = 0;
   uint8_t ch;
+  char chr;
   do
   {
     ch = EEPROM.read(i);
     ConfigStorage::buffer[i] = (char)ch;
     i++;
-  } while (ch != 255);
-  ConfigStorage::size = i - 2;
-  /*EEPROM.read(0, storage.wifi_ssid);
-  EEPROM.get(0 + sizeof(storage.wifi_ssid), storage.wifi_psw);
-  EEPROM.get(0 + sizeof(storage.wifi_ssid) + sizeof(storage.wifi_psw), storage.owner_id);
-  EEPROM.get(0 + sizeof(storage.wifi_ssid) + sizeof(storage.wifi_psw) + sizeof(storage.owner_id), storage.house_id);
-  EEPROM.get(0 + sizeof(storage.wifi_ssid) + sizeof(storage.wifi_psw) + sizeof(storage.owner_id) + sizeof(storage.house_id), storage.room_id);
-  */
+    chr = (char)ch;
+  } while (chr != '}');
+  ConfigStorage::size = i;
+
   EEPROM.commit();
   EEPROM.end();
 
-  Serial.println("Reading buffer ");
-  
   for (i = 0; i < ConfigStorage::size; i++)
   {
     Serial.print(ConfigStorage::buffer[i]);
   }
-  Serial.println("Reading buffer end");
+  buffer[i] = '\0';
+
+  JSONParser *parser = new JSONParser();
+  parser->parse(buffer);
+
+  for (int i = 0; i < parser->total_pairs; i++)
+  {
+    if (strcmp(parser->pairs[i].key, "owner_id") == 0)
+      this->owner_id = parser->pairs[i].val;
+    else if (strcmp(parser->pairs[i].key, "transact_server_url") == 0)
+      this->server_url = parser->pairs[i].val;
+    else if (strcmp(parser->pairs[i].key, "wifi_ssid") == 0)
+      this->wifi_ssid = parser->pairs[i].val;
+    else if (strcmp(parser->pairs[i].key, "wifi_psw") == 0)
+      this->wifi_psw = parser->pairs[i].val;
+    else if (strcmp(parser->pairs[i].key, "update_url") == 0)
+      this->update_url = parser->pairs[i].val;
+    else if (strcmp(parser->pairs[i].key, "configure_url") == 0)
+      this->configure_url = parser->pairs[i].val;
+
+    Serial.printf("KEY = %s", parser->pairs[i].key);
+    Serial.printf("   VALUE = %s \n", parser->pairs[i].val);
+  }
+  Serial.printf("WIFI SSID = %s \n", this->wifi_ssid);
+  Serial.printf("WIFI PSW = %s \n", this->wifi_psw);
 }
 
 void ConfigStorage ::saveConfiguration(String inputBuffer)
@@ -56,11 +77,52 @@ void ConfigStorage ::saveConfiguration(String inputBuffer)
     EEPROM.write(i, buffer[i]);
   }
 
-  /*EEPROM.put(0 + sizeof(storage.wifi_ssid), storage.wifi_psw);
-  EEPROM.put(0 + sizeof(storage.wifi_ssid) + sizeof(storage.wifi_psw), storage.owner_id);
-  EEPROM.put(0 + sizeof(storage.wifi_ssid) + sizeof(storage.wifi_psw) + sizeof(storage.owner_id), storage.house_id);
-  EEPROM.put(0 + sizeof(storage.wifi_ssid) + sizeof(storage.wifi_psw) + sizeof(storage.owner_id) + sizeof(storage.house_id), storage.room_id);
-*/
   EEPROM.commit();
   EEPROM.end();
+}
+
+void ConfigStorage ::saveConfiguration()
+{
+  String local_ip = this->ipToString(WiFi.localIP());
+
+  char *current_ip = (char *)malloc(sizeof(char) * (local_ip.length() + 1));
+  memset(current_ip, '\0', sizeof(current_ip));
+  local_ip.toCharArray(current_ip, local_ip.length() + 1);
+
+  if (this->local_ip == NULL || strncmp(this->local_ip, current_ip, (local_ip.length() + 1)) != 0)
+  {
+    //ip is changed update to server also.
+    this->local_ip = current_ip;
+  }
+
+  String str = "{";
+  str += "\"wifi_ssid\":\"" + (String)this->wifi_ssid + "\",";
+  str += "\"wifi_psw\":\"" + (String)this->wifi_psw + "\",";
+  str += "\"owner_id\":\"" + (String)this->owner_id + "\",";
+  str += "\"server_url\":\"" + (String)this->server_url + "\",";
+  str += "\"update_url\":\"" + (String)this->update_url + "\",";
+  str += "\"configure_url\":\"" + (String)this->configure_url + "\",";
+  str += "\"local_ip\":\"" + (String)this->local_ip + "\",";
+  str += "\"peripheral_id\":\"" + (String)this->peripheral_id + "\"";
+  str += "}";
+
+  Serial.println("New OBject to store");
+  Serial.print(str);
+
+  this->saveConfiguration(str);
+}
+
+OPERATION_MODE ConfigStorage ::getOperarionMode()
+{
+  if (this->wifi_ssid != NULL)
+    return e_RECEPTION_MODE;
+  return e_CONFIG_MODE;
+}
+
+String ConfigStorage ::ipToString(IPAddress ip)
+{
+  String s = "";
+  for (int i = 0; i < 4; i++)
+    s += i ? "." + String(ip[i]) : String(ip[i]);
+  return s;
 }

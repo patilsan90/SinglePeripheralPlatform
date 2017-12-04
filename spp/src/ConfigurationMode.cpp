@@ -17,10 +17,9 @@ static void handle_config_request()
   //config_server.sendHeader("Connection", "close");
   //config_server.sendHeader("Access-Control-Allow-Origin", "*");
   //config_server.send(200, "text/plain", "New hello from esp8266!");
- 
+
   if (config_server.hasArg("plain") == true)
   {
-
     String msg;
     String message = config_server.arg("plain");
     ConfigStorage *storage = new ConfigStorage;
@@ -39,51 +38,68 @@ static void handle_config_request()
     int config_details_counter = 0;
     for (int i = 0; i < parser->total_pairs; i++)
     {
-      if (strcmp(parser->pairs[i].key, "owner_id"))
+      if (strcmp(parser->pairs[i].key, "owner_id") == 0)
       {
         config_details_counter++;
         storage->owner_id = parser->pairs[i].val;
       }
-      else if (strcmp(parser->pairs[i].key, "transact_server_url"))
+      else if (strcmp(parser->pairs[i].key, "transact_server_url") == 0)
       {
         config_details_counter++;
         storage->server_url = parser->pairs[i].val;
       }
-      else if (strcmp(parser->pairs[i].key, "wifi_name"))
+      else if (strcmp(parser->pairs[i].key, "wifi_ssid") == 0)
       {
         config_details_counter++;
         storage->wifi_ssid = parser->pairs[i].val;
       }
-      else if (strcmp(parser->pairs[i].key, "wifi_psw"))
+      else if (strcmp(parser->pairs[i].key, "wifi_psw") == 0)
       {
         config_details_counter++;
         storage->wifi_psw = parser->pairs[i].val;
       }
+      else if (strcmp(parser->pairs[i].key, "update_url") == 0)
+      {
+        config_details_counter++;
+        storage->update_url = parser->pairs[i].val;
+      }
+      else if (strcmp(parser->pairs[i].key, "configure_url") == 0)
+      {
+        config_details_counter++;
+        storage->configure_url = parser->pairs[i].val;
+      }
 
       Serial.print(parser->pairs[i].key);
       Serial.print(parser->pairs[i].val);
-      Serial.println("  :: ");
+      Serial.println(" :: ");
     }
     Serial.println("******PARSING DONE ......");
 
-    if (config_details_counter < 4)
+    if (config_details_counter >= 6)
     {
-      msg = "{ \"response\":\"e_DEVICE_CONFIGURED\", \"SUCCESS\": \"";
+      msg = "{ \"is_success\":\"true\", \"mac_addr\": \"";
       msg += WiFi.macAddress();
       msg += "\"}";
+      config_server.send(200, "text/plain", msg);
+      delay(2000);
+      ESP.reset();
     }
     else
     {
-      msg = "{ \"response\":\"e_DEVICE_CONFIGURED\", \"INCOMLETE CONFIGUE INFORMATION\": \"";
-      msg += WiFi.macAddress();
-      msg += "\"}";
+      msg = "{ \"is_success\":\"false\"}";
+      config_server.send(200, "text/plain", msg);
     }
-    config_server.send(200, "text/plain", msg);
   }
   else
   {
     Serial.println("Error: No Data received");
   }
+}
+
+void ServerMode ::closeAPMode()
+{
+  config_server.close();
+  config_server.stop();
 }
 
 void ServerMode ::init()
@@ -108,7 +124,8 @@ void ServerMode ::init()
   Serial.println(myIP);
 
   config_server.on("/smart_home/device/configure", handle_config_request); //Which routine to handle at root location
-  config_server.begin();                                                   //Start server
+
+  config_server.begin(); //Start server
   Serial.println("HTTP server started");
 }
 

@@ -16,6 +16,7 @@ public:
   int total_pairs;
   key_val pairs[20];
   void parse(String input);
+  void parse(char input[]);
 
 private:
   char *trimwhitespace(char *str);
