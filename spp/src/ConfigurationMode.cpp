@@ -56,14 +56,14 @@ void ServerMode ::closeAPMode()
 void ServerMode ::init()
 {
   ServerMode serverMode;
-  Serial.println("In Configuration mode");
+  Serial.println(F("In Configuration mode"));
   WiFi.mode(WIFI_AP_STA);
   WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0)); // subnet FF FF FF 00
 
   boolean result = WiFi.softAP("SmartHomeDevCon", "transactsmarthome");
   if (result == true)
   {
-    Serial.println("Smart home configuration mode is Ready");
+    Serial.println(F("Smart home configuration mode is Ready"));
   }
   else
   {
@@ -71,13 +71,13 @@ void ServerMode ::init()
   }
 
   IPAddress myIP = WiFi.softAPIP(); //Get IP address
-  Serial.print("HotSpt IP:");
+  Serial.print(F("HotSpt IP:"));
   Serial.println(myIP);
 
   config_server.on("/smart_home/device/configure", handle_config_request); //Which routine to handle at root location
 
   config_server.begin(); //Start server
-  Serial.println("HTTP server started");
+  Serial.println(F("HTTP server started"));
 }
 
 void ServerMode::handleClient()

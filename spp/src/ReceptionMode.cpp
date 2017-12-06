@@ -28,9 +28,9 @@ void ReceptionMode ::init(StorageUnit *storage1)
 void ReceptionMode ::printWiFiStatus()
 {
   Serial.println("");
-  Serial.print("Connected to ");
+  Serial.print(F("Connected to "));
   Serial.println(ssid);
-  Serial.print("IP address: ");
+  Serial.print(F("IP address: "));
   Serial.println(WiFi.localIP());
 }
 
@@ -110,7 +110,7 @@ String ReceptionMode ::getUpdates()
   }
   else
   {
-    Serial.println("Error in WiFi connection establishment");
+    Serial.println(F("Error in WiFi connection establishment"));
   }
   delay(1000); //Send a request every 1 second
   return (payload);

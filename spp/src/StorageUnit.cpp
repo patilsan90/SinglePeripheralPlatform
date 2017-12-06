@@ -4,7 +4,7 @@
 
 void StorageUnit::init()
 {
-  Serial.println("Spiffs Storage Unit initializing.....");
+  Serial.println(F("Spiffs Storage Unit initializing....."));
   SPIFFS.begin();
 }
 
@@ -12,11 +12,11 @@ int StorageUnit::convertStringToObj(String input)
 {
   String msg;
 
-  Serial.println("*********");
+  Serial.println(F("*********"));
   Serial.println(input);
-  Serial.println("*********");
+  Serial.println(F("*********"));
 
-  Serial.println("*****PARSING START****");
+  Serial.println(F("*****PARSING START****"));
 
   JSONParser *parser = new JSONParser();
   parser->parse(input);
@@ -65,7 +65,7 @@ int StorageUnit::convertStringToObj(String input)
     return 0;
   return -1;
 
-  Serial.println("******PARSING DONE ......");
+  Serial.println(F("******PARSING DONE ......"));
 }
 
 int StorageUnit::saveConfiguration(String inputBuffer)
@@ -76,17 +76,17 @@ int StorageUnit::saveConfiguration(String inputBuffer)
 
   File file;
   SPIFFS.format();
-  Serial.println("Spiffs formatted");
+  Serial.println(F("Spiffs formatted"));
 
   // Open file for writing
   file = SPIFFS.open("/wifi_ssid.txt", "w");
   if (!file)
   {
-    Serial.println("wifi_ssid write open failed");
+    Serial.println(F("wifi_ssid write open failed"));
   }
   else
   {
-    Serial.println("====== Writing to SPIFFS wifi_ssid file =========");
+    Serial.println(F("====== Writing to SPIFFS wifi_ssid file ========="));
     file.println((String)this->wifi_ssid);
   }
   file.close();
@@ -95,11 +95,11 @@ int StorageUnit::saveConfiguration(String inputBuffer)
   file = SPIFFS.open("/wifi_psw.txt", "w");
   if (!file)
   {
-    Serial.println("wifi_psw write open failed");
+    Serial.println(F("wifi_psw write open failed"));
   }
   else
   {
-    Serial.println("====== Writing to SPIFFS wifi_psw file =========");
+    Serial.println(F("====== Writing to SPIFFS wifi_psw file ========="));
     file.println((String)this->wifi_psw);
   }
   file.close();
@@ -107,11 +107,11 @@ int StorageUnit::saveConfiguration(String inputBuffer)
   file = SPIFFS.open("/owner_id.txt", "w");
   if (!file)
   {
-    Serial.println("owner_id write open failed");
+    Serial.println(F("owner_id write open failed"));
   }
   else
   {
-    Serial.println("====== Writing to SPIFFS owner_id file =========");
+    Serial.println(F("====== Writing to SPIFFS owner_id file ========="));
     file.println((String)this->owner_id);
   }
   file.close();
@@ -119,11 +119,11 @@ int StorageUnit::saveConfiguration(String inputBuffer)
   file = SPIFFS.open("/server_url.txt", "w");
   if (!file)
   {
-    Serial.println("server_url write open failed");
+    Serial.println(F("server_url write open failed"));
   }
   else
   {
-    Serial.println("====== Writing to SPIFFS server_url file =========");
+    Serial.println(F("====== Writing to SPIFFS server_url file ========="));
     file.println((String)this->server_url);
   }
   file.close();
@@ -131,11 +131,11 @@ int StorageUnit::saveConfiguration(String inputBuffer)
   file = SPIFFS.open("/update_url.txt", "w");
   if (!file)
   {
-    Serial.println("update_url write open failed");
+    Serial.println(F("update_url write open failed"));
   }
   else
   {
-    Serial.println("====== Writing to SPIFFS update_url file =========");
+    Serial.println(F("====== Writing to SPIFFS update_url file ========="));
     file.println((String)this->update_url);
   }
   file.close();
@@ -143,11 +143,11 @@ int StorageUnit::saveConfiguration(String inputBuffer)
   file = SPIFFS.open("/configure_url.txt", "w");
   if (!file)
   {
-    Serial.println("configure_url write open failed");
+    Serial.println(F("configure_url write open failed"));
   }
   else
   {
-    Serial.println("====== Writing to SPIFFS configure_url file =========");
+    Serial.println(F("====== Writing to SPIFFS configure_url file ========="));
     file.println((String)this->configure_url);
   }
   file.close();
@@ -155,11 +155,11 @@ int StorageUnit::saveConfiguration(String inputBuffer)
   file = SPIFFS.open("/local_ip.txt", "w");
   if (!file)
   {
-    Serial.println("local_ip write open failed");
+    Serial.println(F("local_ip write open failed"));
   }
   else
   {
-    Serial.println("====== Writing to SPIFFS local_ip file =========");
+    Serial.println(F("====== Writing to SPIFFS local_ip file ========="));
     file.println((String)this->local_ip);
   }
   file.close();
@@ -175,11 +175,11 @@ void StorageUnit::loadConfiguration()
   file = SPIFFS.open("/wifi_ssid.txt", "r");
   if (!file)
   {
-    Serial.println("wifi_ssid write open failed");
+    Serial.println(F("wifi_ssid write open failed"));
   }
   else
   {
-    Serial.println("====== Reading to SPIFFS wifi_ssid file =========");
+    Serial.println(F("====== Reading to SPIFFS wifi_ssid file ========="));
     this->wifi_ssid = file.readStringUntil('\n');
     Serial.println(this->wifi_ssid);
   }
@@ -189,11 +189,11 @@ void StorageUnit::loadConfiguration()
   file = SPIFFS.open("/wifi_psw.txt", "r");
   if (!file)
   {
-    Serial.println("wifi_psw write open failed");
+    Serial.println(F("wifi_psw write open failed"));
   }
   else
   {
-    Serial.println("====== Reading to SPIFFS wifi_psw file =========");
+    Serial.println(F("====== Reading to SPIFFS wifi_psw file ========="));
     this->wifi_psw = file.readStringUntil('\n'); //file.println((String)this->wifi_psw);
     Serial.println(this->wifi_psw);
   }
@@ -202,11 +202,11 @@ void StorageUnit::loadConfiguration()
   file = SPIFFS.open("/owner_id.txt", "r");
   if (!file)
   {
-    Serial.println("owner_id write open failed");
+    Serial.println(F("owner_id write open failed"));
   }
   else
   {
-    Serial.println("====== Reading to SPIFFS owner_id file =========");
+    Serial.println(F("====== Reading to SPIFFS owner_id file ========="));
     this->owner_id = file.readStringUntil('\n'); // file.println((String)this->owner_id);
     Serial.println(this->owner_id);
   }
@@ -215,11 +215,11 @@ void StorageUnit::loadConfiguration()
   file = SPIFFS.open("/server_url.txt", "r");
   if (!file)
   {
-    Serial.println("server_url write open failed");
+    Serial.println(F("server_url write open failed"));
   }
   else
   {
-    Serial.println("====== Reading to SPIFFS server_url file =========");
+    Serial.println(F("====== Reading to SPIFFS server_url file ========="));
     this->server_url = file.readStringUntil('\n'); //file.println((String)this->server_url);
     Serial.println(this->server_url);
   }
@@ -228,11 +228,11 @@ void StorageUnit::loadConfiguration()
   file = SPIFFS.open("/update_url.txt", "r");
   if (!file)
   {
-    Serial.println("update_url write open failed");
+    Serial.println(F("update_url write open failed"));
   }
   else
   {
-    Serial.println("====== Reading to SPIFFS update_url file =========");
+    Serial.println(F("====== Reading to SPIFFS update_url file ========="));
     this->update_url = file.readStringUntil('\n'); //file.println((String)this->update_url);
     Serial.println(this->update_url);
   }
@@ -241,11 +241,11 @@ void StorageUnit::loadConfiguration()
   file = SPIFFS.open("/configure_url.txt", "r");
   if (!file)
   {
-    Serial.println("configure_url write open failed");
+    Serial.println(F("configure_url write open failed"));
   }
   else
   {
-    Serial.println("====== Reading to SPIFFS configure_url file =========");
+    Serial.println(F("====== Reading to SPIFFS configure_url file ========="));
     this->configure_url = file.readStringUntil('\n'); // file.println((String)this->configure_url);
     Serial.println(this->configure_url);
   }
@@ -254,11 +254,11 @@ void StorageUnit::loadConfiguration()
   file = SPIFFS.open("/local_ip.txt", "r");
   if (!file)
   {
-    Serial.println("local_ip write open failed");
+    Serial.println(F("local_ip write open failed"));
   }
   else
   {
-    Serial.println("====== Reading to SPIFFS local_ip file =========");
+    Serial.println(F("====== Reading to SPIFFS local_ip file ========="));
     this->local_ip = file.readStringUntil('\n'); // file.println((String)this->local_ip);
     Serial.println(this->local_ip);
   }
@@ -292,11 +292,11 @@ bool StorageUnit ::saveIP()
     File file = SPIFFS.open("/local_ip.txt", "w");
     if (!file)
     {
-      Serial.println("local_ip write open failed");
+      Serial.println(F("local_ip write open failed"));
     }
     else
     {
-      Serial.println("====== Writing to SPIFFS local_ip file =========");
+      Serial.println(F("====== Writing to SPIFFS local_ip file ========="));
       file.println(this->local_ip);
     }
     file.close();

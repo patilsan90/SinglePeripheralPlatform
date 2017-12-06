@@ -57,13 +57,13 @@ void setup()
 
   if (mode == e_CONFIG_MODE)
   {
-    Serial.println("INIT in Config Mode");
+    Serial.println(F("INIT in Config Mode"));
     serverMode.init();
   }
   else if (mode == e_RECEPTION_MODE)
   {
     serverMode.init();
-    Serial.println("INIT in Reception Mode");
+    Serial.println(F("INIT in Reception Mode"));
     dataReceptionMode->init(storage);
   }
 }
@@ -72,7 +72,7 @@ void setup()
 
 void peripheralConnectedIntr()
 {
-  Serial.println("New Peripheral connected interrupt");
+  Serial.println(F("New Peripheral connected interrupt"));
   if (WiFi.status() == WL_CONNECTED)
   {
     //gatherPeripherals();
@@ -85,7 +85,7 @@ void loop()
 {
   if (mode == e_CONFIG_MODE)
   {
-    Serial.println("Working in Config Mode");
+    Serial.println(F("Working in Config Mode"));
     Serial.printf("Stations connected = %d \n", WiFi.softAPgetStationNum());
     serverMode.handleClient(); //Handle client requests
     delay(2000);
@@ -98,7 +98,7 @@ void loop()
 
 void onReceptionMode()
 {
-  Serial.println("Working in Reception Mode");
+  Serial.println(F("Working in Reception Mode"));
   Serial.println("Server URL = ::" + storage->server_url);
   gatherPeripherals();
   if (WiFi.status() == WL_CONNECTED && isGatherPeriList == true)
