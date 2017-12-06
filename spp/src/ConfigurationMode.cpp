@@ -7,7 +7,7 @@
 #include <WiFiClient.h>
 #include <WiFiServer.h>
 #include <JSONParser.h>
-#include <ConfigStorage.h>
+#include <StorageUnit.h>
 
 ESP8266WebServer config_server(1337);
 IPAddress apIP(10, 10, 10, 1); // Private network address: local & gateway
@@ -18,65 +18,16 @@ static void handle_config_request()
   //config_server.sendHeader("Access-Control-Allow-Origin", "*");
   //config_server.send(200, "text/plain", "New hello from esp8266!");
 
+  StorageUnit *storage = new StorageUnit();
+
   if (config_server.hasArg("plain") == true)
   {
     String msg;
     String message = config_server.arg("plain");
-    ConfigStorage *storage = new ConfigStorage;
-    storage->saveConfiguration(message);
 
-    Serial.println("*********");
-    Serial.println(message);
-    Serial.println("*********");
-
-    Serial.println("*****PARSING START****");
-
-    JSONParser *parser = new JSONParser();
-    parser->parse(message);
-
-    Serial.println(parser->total_pairs);
-    int config_details_counter = 0;
-    for (int i = 0; i < parser->total_pairs; i++)
+    if (storage->saveConfiguration(message) == 0)
     {
-      if (strcmp(parser->pairs[i].key, "owner_id") == 0)
-      {
-        config_details_counter++;
-        storage->owner_id = parser->pairs[i].val;
-      }
-      else if (strcmp(parser->pairs[i].key, "transact_server_url") == 0)
-      {
-        config_details_counter++;
-        storage->server_url = parser->pairs[i].val;
-      }
-      else if (strcmp(parser->pairs[i].key, "wifi_ssid") == 0)
-      {
-        config_details_counter++;
-        storage->wifi_ssid = parser->pairs[i].val;
-      }
-      else if (strcmp(parser->pairs[i].key, "wifi_psw") == 0)
-      {
-        config_details_counter++;
-        storage->wifi_psw = parser->pairs[i].val;
-      }
-      else if (strcmp(parser->pairs[i].key, "update_url") == 0)
-      {
-        config_details_counter++;
-        storage->update_url = parser->pairs[i].val;
-      }
-      else if (strcmp(parser->pairs[i].key, "configure_url") == 0)
-      {
-        config_details_counter++;
-        storage->configure_url = parser->pairs[i].val;
-      }
-
-      Serial.print(parser->pairs[i].key);
-      Serial.print(parser->pairs[i].val);
-      Serial.println(" :: ");
-    }
-    Serial.println("******PARSING DONE ......");
-
-    if (config_details_counter >= 6)
-    {
+      storage->loadConfiguration();
       msg = "{ \"is_success\":\"true\", \"mac_addr\": \"";
       msg += WiFi.macAddress();
       msg += "\"}";

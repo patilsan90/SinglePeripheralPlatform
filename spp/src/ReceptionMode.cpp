@@ -13,14 +13,14 @@ const char *ssid = "Techies2.4";
 const char *password = "passwordis1to8";
 WiFiServer server(137);
 
-static ConfigStorage *storage; // =new ConfigStorage();
-void ReceptionMode ::init(ConfigStorage *storage1)
+static StorageUnit *storage; // =new StorageUnit();
+void ReceptionMode ::init(StorageUnit *storage1)
 {
   storage = storage1;
   WiFi.hostname("SinglePeripheralPlatform");
   WiFi.mode(WIFI_AP_STA);
   //WiFi.mode(WIFI_STA);
-  WiFi.begin(storage->wifi_ssid, storage->wifi_psw);
+  WiFi.begin(storage->wifi_ssid.c_str(), storage->wifi_psw.c_str());
   // Start TCP server.
   //server.begin();
 }
@@ -36,20 +36,7 @@ void ReceptionMode ::printWiFiStatus()
 
 bool ReceptionMode ::isIPChanged()
 {
-  String local_ip = this->ipToString(WiFi.localIP());
-
-  char *current_ip = (char *)malloc(sizeof(char) * (local_ip.length() + 1));
-  memset(current_ip, '\0', sizeof(current_ip));
-  local_ip.toCharArray(current_ip, local_ip.length() + 1);
-
-  if (storage->local_ip == NULL || strncmp(storage->local_ip, current_ip, (local_ip.length() + 1)) != 0)
-  {
-    //ip is changed update to server also.
-    storage->local_ip = current_ip;
-    storage->saveConfiguration();
-    return true;
-  }
-  return false;
+  return storage->saveIP();
 }
 
 int ReceptionMode ::updateLocalIPToServer()

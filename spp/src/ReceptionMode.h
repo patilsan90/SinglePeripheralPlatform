@@ -2,12 +2,12 @@
 #define __RECEPTION_MODE__
 
 #include <ESP8266WebServer.h>
-#include <ConfigStorage.h>
+#include "StorageUnit.h"
 
 class ReceptionMode
 {
 public:
-  void init(ConfigStorage *storage);
+  void init(StorageUnit *storage);
   String getUpdates();
 
   void printWiFiStatus();

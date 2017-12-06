@@ -4,9 +4,9 @@
 #include <WiFiClient.h>
 #include <WiFiServer.h>
 #include <ConfigurationMode.h>
-#include <ConfigStorage.h>
 #include <ReceptionMode.h>
 #include <Peripheral.h>
+#include <StorageUnit.h>
 
 //#include <FirebaseArduino.h>
 
@@ -23,7 +23,7 @@ OPERATION_MODE mode;
 
 ServerMode serverMode;
 ReceptionMode *dataReceptionMode = new ReceptionMode();
-static ConfigStorage *storage = new ConfigStorage();
+static StorageUnit *storage = new StorageUnit();
 
 static Peripheral *per = new Peripheral(PERIPHRAL_CONNECTION_STATUS_PIN);
 void peripheralConnectedIntr();
@@ -42,25 +42,25 @@ void setup()
   pinMode(PERIPHRAL_CONNECTION_STATUS_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(PERIPHRAL_CONNECTION_STATUS_PIN), peripheralConnectedIntr, FALLING);
 
-  storage->loadConfiguration();
+  // storage->loadConfiguration();
 
-  mode = storage->getOperarionMode();
+  //mode = storage->getOperarionMode();
 
   delay(1000);
-  Serial.printf("WIFI SSID = %s \n", storage->wifi_ssid);
-  Serial.printf("WIFI PSW = %s \n", storage->wifi_psw);
- // mode = e_CONFIG_MODE;
+  Serial.println("WIFI SSID = :: " + storage->wifi_ssid);
+  Serial.println("WIFI PSW = :: " + storage->wifi_psw);
+  mode = e_CONFIG_MODE;
 
   // TODO
   // Below commented IF-ELSE is temporary just for testing mode purpose,
   // need to uncomment it in future.
 
-  //if (mode == e_CONFIG_MODE)
+  if (mode == e_CONFIG_MODE)
   {
     Serial.println("INIT in Config Mode");
     serverMode.init();
   }
-//  else if (mode == e_RECEPTION_MODE)
+  else if (mode == e_RECEPTION_MODE)
   {
     serverMode.init();
     Serial.println("INIT in Reception Mode");
@@ -83,14 +83,14 @@ void peripheralConnectedIntr()
 void onReceptionMode();
 void loop()
 {
-  // if (mode == e_CONFIG_MODE)
+  if (mode == e_CONFIG_MODE)
   {
     Serial.println("Working in Config Mode");
     Serial.printf("Stations connected = %d \n", WiFi.softAPgetStationNum());
     serverMode.handleClient(); //Handle client requests
     delay(2000);
   }
-   //else if (mode == e_RECEPTION_MODE)
+  else if (mode == e_RECEPTION_MODE)
   {
     onReceptionMode();
   }
@@ -99,8 +99,8 @@ void loop()
 void onReceptionMode()
 {
   Serial.println("Working in Reception Mode");
-  Serial.printf("Server URL = %s \n", storage->server_url);
- gatherPeripherals();
+  Serial.println("Server URL = ::" + storage->server_url);
+  gatherPeripherals();
   if (WiFi.status() == WL_CONNECTED && isGatherPeriList == true)
   {
     gatherPeripherals();
@@ -120,7 +120,7 @@ void onReceptionMode()
 
 void updatePeripheralIDs()
 {
-  if (strcmp(storage->peripheral_id, NO_ID) == 0)
+  //if (strcmp(storage->peripheral_id, NO_ID) == 0)
   {
     // get new id from server and assign it to peripheral
   }
@@ -136,12 +136,12 @@ void gatherPeripherals()
 void sendPeripheralsListToServer()
 {
 
-  if (strcmp(storage->peripheral_id, (char *)NO_ID) == 0)
+  //if (strcmp(storage->peripheral_id, (char *)NO_ID) == 0)
   {
-    //need to assign peripheral device id;
-    // send type of device to server too.
+      //need to assign peripheral device id;
+      // send type of device to server too.
   }
-  else
+  //else
   {
     //send this peripheral id to server
   }
