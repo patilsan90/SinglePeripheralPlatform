@@ -8,6 +8,7 @@
 #include <WiFiServer.h>
 #include <JSONParser.h>
 #include <StorageUnit.h>
+#include "error_codes.h"
 
 ESP8266WebServer config_server(1337);
 IPAddress apIP(10, 10, 10, 1); // Private network address: local & gateway
@@ -18,32 +19,41 @@ static void handle_config_request()
   //config_server.sendHeader("Access-Control-Allow-Origin", "*");
   //config_server.send(200, "text/plain", "New hello from esp8266!");
 
-  StorageUnit *storage = new StorageUnit();
-
   if (config_server.hasArg("plain") == true)
   {
-    String msg;
+    String response;
     String message = config_server.arg("plain");
 
-    if (storage->saveConfiguration(message) == 0)
+    StorageUnit *storage = new StorageUnit();
+
+    switch (storage->saveConfiguration(message))
     {
+    case CONFIGURATION_SUCCESS:
+      Serial.println(F("Success: Device configured successfully."));
       storage->loadConfiguration();
-      msg = "{ \"is_success\":\"true\", \"mac_addr\": \"";
-      msg += WiFi.macAddress();
-      msg += "\"}";
-      config_server.send(200, "text/plain", msg);
+      response = "{ \"is_success\":\"true\", \"mac_addr\": \"";
+      response += WiFi.macAddress();
+      response += "\"}";
+      config_server.send(200, "text/plain", response);
       delay(2000);
       ESP.reset();
+      break;
+
+    case CONFIGURATION_INCOMPLETE_INFO:
+      Serial.println(F("Error: Incomplete information received."));
+      response = "{ \"is_success\":\"false\"}";
+      config_server.send(200, "text/plain", response);
+      break;
+
+    case CONFIGURATION_OWNER_MISMATCH:
+      Serial.println(F("Error: You are not owner of this device."));
+      response = "{ \"is_success\":\"false\", \"message\":\"You are not owner of this device.\"}";
+      config_server.send(200, "text/plain", response);
+      break;
+
+    default:
+      Serial.println(F("Error: incomplete Data received"));
     }
-    else
-    {
-      msg = "{ \"is_success\":\"false\"}";
-      config_server.send(200, "text/plain", msg);
-    }
-  }
-  else
-  {
-    Serial.println("Error: No Data received");
   }
 }
 
@@ -60,14 +70,19 @@ void ServerMode ::init()
   WiFi.mode(WIFI_AP_STA);
   WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0)); // subnet FF FF FF 00
 
-  boolean result = WiFi.softAP("SmartHomeDevCon", "transactsmarthome");
+  String mac = WiFi.macAddress();
+
+  String ap_name = "SmartHomeDevice-" + (String)mac.charAt(0) + (String)mac.charAt(5) +
+                   (String)mac.charAt(mac.length() - 2) + (String)mac.charAt(mac.length() - 1);
+
+  boolean result = WiFi.softAP(ap_name.c_str(), "transactsmarthome");
   if (result == true)
   {
     Serial.println(F("Smart home configuration mode is Ready"));
   }
   else
   {
-    Serial.println("Smart home configuration mode Failed!");
+    Serial.println(F("Smart home configuration mode Failed!"));
   }
 
   IPAddress myIP = WiFi.softAPIP(); //Get IP address

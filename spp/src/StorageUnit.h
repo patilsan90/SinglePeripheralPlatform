@@ -39,10 +39,10 @@ public:
   int saveConfiguration(String input);
   void loadConfiguration();
   bool saveIP();
-
   OPERATION_MODE getOperarionMode();
 
 private:
+  String getOwner();
   void init();
   int convertStringToObj(String input);
   String ipToString(IPAddress ip);

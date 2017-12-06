@@ -1,7 +1,7 @@
 #include <StorageUnit.h>
 #include <JSONParser.h>
 #include "FS.h"
-
+#include "error_codes.h"
 void StorageUnit::init()
 {
   Serial.println(F("Spiffs Storage Unit initializing....."));
@@ -27,6 +27,16 @@ int StorageUnit::convertStringToObj(String input)
   {
     if (strcmp(parser->pairs[i].key, "owner_id") == 0)
     {
+      String currentOwner = this->getOwner();
+      String val = (String)parser->pairs[i].val;
+
+      currentOwner.trim();
+      val.trim();
+
+      if (currentOwner.compareTo("NO_OWNER") != 0)
+        if (currentOwner.compareTo(val) != 0)
+          return CONFIGURATION_OWNER_MISMATCH;
+
       config_details_counter++;
       this->owner_id = (String)parser->pairs[i].val;
     }
@@ -62,8 +72,9 @@ int StorageUnit::convertStringToObj(String input)
   }
 
   if (config_details_counter >= 6)
-    return 0;
-  return -1;
+    return CONFIGURATION_SUCCESS;
+
+  return CONFIGURATION_INCOMPLETE_INFO;
 
   Serial.println(F("******PARSING DONE ......"));
 }
@@ -71,8 +82,9 @@ int StorageUnit::convertStringToObj(String input)
 int StorageUnit::saveConfiguration(String inputBuffer)
 {
   this->init();
-  if (this->convertStringToObj(inputBuffer) != 0)
-    return -1;
+  int ret = this->convertStringToObj(inputBuffer);
+  if (ret != CONFIGURATION_SUCCESS)
+    return ret;
 
   File file;
   SPIFFS.format();
@@ -163,7 +175,7 @@ int StorageUnit::saveConfiguration(String inputBuffer)
     file.println((String)this->local_ip);
   }
   file.close();
-  return 0;
+  return CONFIGURATION_SUCCESS;
 }
 
 void StorageUnit::loadConfiguration()
@@ -300,5 +312,26 @@ bool StorageUnit ::saveIP()
       file.println(this->local_ip);
     }
     file.close();
+  }
+}
+
+String StorageUnit::getOwner()
+{
+  String s;
+  File file;
+
+  file = SPIFFS.open("/owner_id.txt", "r");
+  if (!file)
+  {
+    Serial.println(F("owner_id write open failed"));
+    file.close();
+    return "NO_OWNER";
+  }
+  else
+  {
+    Serial.println(F("====== Reading to SPIFFS owner_id file ========="));
+    String owner = file.readStringUntil('\n');
+    file.close();
+    return owner;
   }
 }
