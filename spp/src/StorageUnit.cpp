@@ -29,10 +29,8 @@ int StorageUnit::convertStringToObj(String input)
     {
       String currentOwner = this->getOwner();
       String val = (String)parser->pairs[i].val;
-
       currentOwner.trim();
       val.trim();
-
       if (currentOwner.compareTo("NO_OWNER") != 0)
         if (currentOwner.compareTo(val) != 0)
           return CONFIGURATION_OWNER_MISMATCH;
@@ -40,11 +38,7 @@ int StorageUnit::convertStringToObj(String input)
       config_details_counter++;
       this->owner_id = (String)parser->pairs[i].val;
     }
-    else if (strcmp(parser->pairs[i].key, "transact_server_url") == 0)
-    {
-      config_details_counter++;
-      this->server_url = (String)parser->pairs[i].val;
-    }
+
     else if (strcmp(parser->pairs[i].key, "wifi_ssid") == 0)
     {
       config_details_counter++;
@@ -55,28 +49,22 @@ int StorageUnit::convertStringToObj(String input)
       config_details_counter++;
       this->wifi_psw = (String)parser->pairs[i].val;
     }
-    else if (strcmp(parser->pairs[i].key, "update_url") == 0)
+    else if (strcmp(parser->pairs[i].key, "transact_server_url") == 0)
     {
       config_details_counter++;
-      this->update_url = (String)parser->pairs[i].val;
-    }
-    else if (strcmp(parser->pairs[i].key, "configure_url") == 0)
-    {
-      config_details_counter++;
-      this->configure_url = (String)parser->pairs[i].val;
+      this->server_url = (String)parser->pairs[i].val;
     }
 
     Serial.print(parser->pairs[i].key);
     Serial.print(parser->pairs[i].val);
     Serial.println(" :: ");
   }
+  Serial.println(F("******PARSING DONE ......"));
 
-  if (config_details_counter >= 6)
+  if (config_details_counter >= 4)
     return CONFIGURATION_SUCCESS;
 
   return CONFIGURATION_INCOMPLETE_INFO;
-
-  Serial.println(F("******PARSING DONE ......"));
 }
 
 int StorageUnit::saveConfiguration(String inputBuffer)
@@ -139,42 +127,6 @@ int StorageUnit::saveConfiguration(String inputBuffer)
     file.println((String)this->server_url);
   }
   file.close();
-  // Open file for writing
-  file = SPIFFS.open("/update_url.txt", "w");
-  if (!file)
-  {
-    Serial.println(F("update_url write open failed"));
-  }
-  else
-  {
-    Serial.println(F("====== Writing to SPIFFS update_url file ========="));
-    file.println((String)this->update_url);
-  }
-  file.close();
-  // Open file for writing
-  file = SPIFFS.open("/configure_url.txt", "w");
-  if (!file)
-  {
-    Serial.println(F("configure_url write open failed"));
-  }
-  else
-  {
-    Serial.println(F("====== Writing to SPIFFS configure_url file ========="));
-    file.println((String)this->configure_url);
-  }
-  file.close();
-  // Open file for writing
-  file = SPIFFS.open("/local_ip.txt", "w");
-  if (!file)
-  {
-    Serial.println(F("local_ip write open failed"));
-  }
-  else
-  {
-    Serial.println(F("====== Writing to SPIFFS local_ip file ========="));
-    file.println((String)this->local_ip);
-  }
-  file.close();
   return CONFIGURATION_SUCCESS;
 }
 
@@ -182,12 +134,12 @@ void StorageUnit::loadConfiguration()
 {
   String s;
   File file;
-
+  this->init();
   // Open file for Reading
   file = SPIFFS.open("/wifi_ssid.txt", "r");
   if (!file)
   {
-    Serial.println(F("wifi_ssid write open failed"));
+    Serial.println(F("wifi_ssid Read open failed"));
   }
   else
   {
@@ -201,7 +153,7 @@ void StorageUnit::loadConfiguration()
   file = SPIFFS.open("/wifi_psw.txt", "r");
   if (!file)
   {
-    Serial.println(F("wifi_psw write open failed"));
+    Serial.println(F("wifi_psw Read open failed"));
   }
   else
   {
@@ -214,7 +166,7 @@ void StorageUnit::loadConfiguration()
   file = SPIFFS.open("/owner_id.txt", "r");
   if (!file)
   {
-    Serial.println(F("owner_id write open failed"));
+    Serial.println(F("owner_id Read open failed"));
   }
   else
   {
@@ -227,52 +179,13 @@ void StorageUnit::loadConfiguration()
   file = SPIFFS.open("/server_url.txt", "r");
   if (!file)
   {
-    Serial.println(F("server_url write open failed"));
+    Serial.println(F("server_url Read open failed"));
   }
   else
   {
     Serial.println(F("====== Reading to SPIFFS server_url file ========="));
     this->server_url = file.readStringUntil('\n'); //file.println((String)this->server_url);
     Serial.println(this->server_url);
-  }
-  file.close();
-  // Open file for Reading
-  file = SPIFFS.open("/update_url.txt", "r");
-  if (!file)
-  {
-    Serial.println(F("update_url write open failed"));
-  }
-  else
-  {
-    Serial.println(F("====== Reading to SPIFFS update_url file ========="));
-    this->update_url = file.readStringUntil('\n'); //file.println((String)this->update_url);
-    Serial.println(this->update_url);
-  }
-  file.close();
-  // Open file for Reading
-  file = SPIFFS.open("/configure_url.txt", "r");
-  if (!file)
-  {
-    Serial.println(F("configure_url write open failed"));
-  }
-  else
-  {
-    Serial.println(F("====== Reading to SPIFFS configure_url file ========="));
-    this->configure_url = file.readStringUntil('\n'); // file.println((String)this->configure_url);
-    Serial.println(this->configure_url);
-  }
-  file.close();
-  // Open file for Reading
-  file = SPIFFS.open("/local_ip.txt", "r");
-  if (!file)
-  {
-    Serial.println(F("local_ip write open failed"));
-  }
-  else
-  {
-    Serial.println(F("====== Reading to SPIFFS local_ip file ========="));
-    this->local_ip = file.readStringUntil('\n'); // file.println((String)this->local_ip);
-    Serial.println(this->local_ip);
   }
   file.close();
 }
@@ -296,23 +209,13 @@ bool StorageUnit ::saveIP()
 {
   String local_ip = this->ipToString(WiFi.localIP());
 
-  if (this->local_ip.compareTo(local_ip) == 0)
+  if (this->local_ip.compareTo(local_ip) != 0)
   {
     //ip is changed update to server also.
     this->local_ip = local_ip;
-
-    File file = SPIFFS.open("/local_ip.txt", "w");
-    if (!file)
-    {
-      Serial.println(F("local_ip write open failed"));
-    }
-    else
-    {
-      Serial.println(F("====== Writing to SPIFFS local_ip file ========="));
-      file.println(this->local_ip);
-    }
-    file.close();
+    return true;
   }
+  return false;
 }
 
 String StorageUnit::getOwner()
@@ -334,4 +237,9 @@ String StorageUnit::getOwner()
     file.close();
     return owner;
   }
+}
+
+String StorageUnit::getPlatformDeviceId()
+{
+  return "787878";
 }

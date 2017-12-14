@@ -24,4 +24,6 @@
 */
 #define PIN_PLATFORM_DECIDER __IN__(10)
 
+#define PIN_PERIPHERAL_ACTIVATE_VCC __OUT__(10)
+
 #endif

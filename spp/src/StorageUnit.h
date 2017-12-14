@@ -9,37 +9,25 @@ typedef enum OPERATION_MODE {
   e_RECEPTION_MODE,
 } OPERATION_MODE;
 
-/*  Below code is to optimize overall code, take it in future. */
-/*
-typedef enum CONFIG_PARAMETER {
-  WIFI_SSID,
-  WIFI_PSW,
-  OWNER_ID,
-  SERVER_URL,
-  UPDATE_URL,
-  CONFIGURE_URL,
-  LOCAL_IP,
-  CONFIG_PARAMETER_COUNT
-} CONFIG_PARAMETER;
-*/
 class StorageUnit
 {
 public:
-  /*  Below code is to optimize overall code, uncomment and take it in future. */
-  // String configs[CONFIG_PARAMETER_COUNT];
-
   String wifi_ssid;
   String wifi_psw;
   String owner_id;
   String server_url;
-  String update_url;
-  String configure_url;
-  String local_ip;
+  String local_ip = "NO_IP";
+
+  String get_updates_url = "/device/get_updates";
+  String update_peripheral_list_url = "/device/update_peripherals_list";
+  String register_peripheral_url = "/device/register_peripheral";
+  String update_ip_url = "/device/update_ip";
 
   int saveConfiguration(String input);
   void loadConfiguration();
   bool saveIP();
   OPERATION_MODE getOperarionMode();
+  String getPlatformDeviceId();
 
 private:
   String getOwner();

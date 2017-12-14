@@ -4,19 +4,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <SoftwareSerial.h>
+
+#define RX (13) //(14) // *** PB, Pin 0
+#define TX (15) //(12) // *** PB, Pin 3
+
+#define NO_ID ("NO_ID")
+
+#define NO_RESPONSE ("NO_RESPONSE")
 
 class Peripheral
 {
-  int pin_number;
 
 public:
-  Peripheral(int pin_number)
+  Peripheral()
   {
-    this->pin_number=pin_number;
+    perSerial = new SoftwareSerial(RX, TX, false, 256);
+    perSerial->begin(19200);
   }
-  
+  SoftwareSerial *perSerial;
+
   bool isConnected();
-  String getDeviceID();
+  String getDeviceRegID();
+  void setDeviceRegID(String reg_id);
+
+  String getDeviceType();
   String getDeviceStatus();
   String setDeviceStatus();
 };
