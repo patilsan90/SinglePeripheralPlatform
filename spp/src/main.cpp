@@ -8,6 +8,7 @@
 #include <Peripheral.h>
 #include <StorageUnit.h>
 #include "pin_configuration.h"
+
 void client_mode();
 void printWiFiStatus();
 void configure();
@@ -69,20 +70,21 @@ void setup()
 
 void loop()
 {
+
   int is_connected = digitalRead(PIN_IS_CONNECTED);
   Serial.printf("is Connected status :: %d\n", is_connected);
- // delay(1000);
+  // delay(1000);
   if (mode == e_CONFIG_MODE)
   {
-      Serial.println(F("Working in Config Mode"));
-      Serial.printf("Stations connected = %d \n", WiFi.softAPgetStationNum());
+    Serial.println(F("Working in Config Mode"));
+    Serial.printf("Stations connected = %d \n", WiFi.softAPgetStationNum());
     serverMode.handleClient(); //Handle client requests
-    delay(2000);
+    delay(1000);
   }
   else if (mode == e_RECEPTION_MODE)
   {
-       Serial.println(F("Working in Reception Mode"));
-       Serial.println("Server URL = ::" + storage->server_url);
+    Serial.println(F("Working in Reception Mode"));
+    Serial.println("Server URL = ::" + storage->server_url);
     dataReceptionMode->start();
   }
 }

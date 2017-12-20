@@ -26,11 +26,12 @@ public:
 
   bool isConnected();
   String getDeviceRegID();
-  void setDeviceRegID(String reg_id);
+  String setDeviceRegID(String reg_id);
 
   String getDeviceType();
   String getDeviceStatus();
-  String setDeviceStatus();
+
+  String sendUpdates(String cmd);
 };
 
 #endif

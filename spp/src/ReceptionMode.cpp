@@ -10,6 +10,7 @@
 #include <ReceptionMode.h>
 #include <Peripheral.h>
 #include "pin_configuration.h"
+#include "json_id_parser.h"
 
 WiFiServer server(137);
 
@@ -36,7 +37,7 @@ void ReceptionMode ::init(StorageUnit *in_storage)
   WiFi.begin(storage->wifi_ssid.c_str(), storage->wifi_psw.c_str());
 
   // TODO:: Below line is for testing purpose, and need to be removed in actual code.
-  storage->server_url = "http://192.168.1.8:8090/smart_home";
+  storage->server_url = "http://192.168.1.3:8090/smart_home";
 
   /*
    *  Below commented code line is kept for future reference and debug purpose.
@@ -243,7 +244,7 @@ void ReceptionMode::verifyAndRegisterPeripheral(String dev_id, int index, int re
     if (HTTP_CODE_OK == httpCode)
     {
       /* Once received new ID set this id to peripheral. */
-      peripheral->setDeviceRegID(new_reg_id);
+      String status = peripheral->setDeviceRegID(new_reg_id);
       this->connected_dev_ids[index] = new_reg_id;
 
       connected_dev_type[index] = peripheral->getDeviceType();
@@ -288,6 +289,8 @@ void ReceptionMode::verifyAndRegisterPeripheral(String dev_id, int index, int re
   }
   else
   {
+    all_registrations_success = true;
+    Serial.println("Device is already registered, encountered at index:" + index);
     this->connected_dev_ids[index] = dev_id;
     connected_dev_type[index] = peripheral->getDeviceType();
     Serial.println("Get device Type");
@@ -341,6 +344,26 @@ void ReceptionMode ::updateLocalIPToServer()
 void ReceptionMode::updatePeripherals(String input)
 {
   Serial.println("Update Peripherals");
+  parse(input.c_str());
+  Serial.printf("############# total periphrals info received :: %d\n", total_peripherals);
+  for (int i = 0; i < total_peripherals; i++)
+  {
+    Serial.printf("-> %s\n", peripherals[i].json_data);
+    Serial.printf("-> %s\n", peripherals[i].id);
+    String strId = (String)peripherals[i].id;
+    strId.trim();
+    for (int j = 0; j < MAX_NUMBER_OF_PERIPHERALS; j++)
+    {
+      if (connected_dev_ids[j].compareTo(strId) == 0)
+      {
+        Serial.printf("############# Peripheral ID matched at :: %d\n", j);
+        selectLine(j);
+        String status = peripheral->sendUpdates(peripherals[i].json_data);
+        Serial.print("############# Peripheral Return Status :: ");
+        Serial.print(status);
+      }
+    }
+  }
   //use vijen provided JSON parser;
   // for all splitted string send updates to peripherals
 }

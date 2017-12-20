@@ -40,13 +40,26 @@ String Peripheral::getDeviceType()
     return str;
 }
 
-void Peripheral::setDeviceRegID(String reg_id)
+String Peripheral::setDeviceRegID(String reg_id)
 {
+    String status;
     String cmd = "{\"SDI\":\"" + reg_id + "\"}";
     perSerial->flush();
     perSerial->println(cmd);
-    delay(2000);
     Serial.println(cmd);
+
+    int i = 0;
+    while (!perSerial->available())
+    {
+        delay(1);
+        if (i++ >= RESP_WAIT_TIME_OUT)
+            return "NO_RESPONSE";
+    }
+    while (perSerial->available())
+    {
+        status = perSerial->readString();
+    }
+    return status;
 }
 
 String Peripheral::getDeviceRegID()
@@ -66,18 +79,11 @@ String Peripheral::getDeviceRegID()
             return "NO_RESPONSE";
     }
 
-    //   i = 0;
-
     String str = "";
     while (perSerial->available())
     {
-        // dev_id[i] = perSerial->read();
         str = perSerial->readString();
-        //   i++;
     }
-    // dev_id[i] = '\0';
-
-    // return dev_id;
     return str;
 }
 String Peripheral::getDeviceStatus()
@@ -85,8 +91,22 @@ String Peripheral::getDeviceStatus()
     return "Connected yeye";
 }
 
-String Peripheral::setDeviceStatus()
+String Peripheral::sendUpdates(String cmd)
 {
-
-    return "Success device status set";
+    String status;
+    perSerial->flush();
+    perSerial->println(cmd);
+    Serial.println("Sending command :: " + cmd);
+    int i = 0;
+    while (!perSerial->available())
+    {
+        delay(1);
+        if (i++ >= RESP_WAIT_TIME_OUT)
+            return "NO_RESPONSE";
+    }
+    while (perSerial->available())
+    {
+        status = perSerial->readString();
+    }
+    return status;
 }
