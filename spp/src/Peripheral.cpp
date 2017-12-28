@@ -3,6 +3,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <Peripheral.h>
+#include <pin_configuration.h>
 
 #define DEVICE_ID_LEN (8)         //it is 8 bytes
 #define PARENT_DEVICE_ID_LEN (17) //it is 8 bytes
@@ -62,6 +63,11 @@ String Peripheral::setDeviceRegID(String reg_id)
     return status;
 }
 
+int Peripheral ::getRTS()
+{
+    return digitalRead(PIN_RTS);
+}
+
 String Peripheral::getDeviceRegID()
 {
     String cmd = "{\"GDI\":\"\"}";
@@ -93,6 +99,31 @@ String Peripheral::getDeviceStatus()
 
 String Peripheral::sendUpdates(String cmd)
 {
+    String status;
+    perSerial->flush();
+    perSerial->println(cmd);
+    Serial.println("Sending command :: " + cmd);
+    int i = 0;
+    while (!perSerial->available())
+    {
+        delay(1);
+        if (i++ >= RESP_WAIT_TIME_OUT)
+            return "NO_RESPONSE";
+    }
+    while (perSerial->available())
+    {
+        status = perSerial->readString();
+    }
+    return status;
+}
+
+String Peripheral::getUpdates()
+{
+
+    String cmd = "{\"";
+    cmd += CMD_GET_DEVICE_UPDATES;
+    cmd += "\":}";
+
     String status;
     perSerial->flush();
     perSerial->println(cmd);

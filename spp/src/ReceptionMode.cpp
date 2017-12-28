@@ -25,19 +25,21 @@ IPAddress no_IP(0, 0, 0, 0);
 
 boolean all_registrations_success = false;
 
+String updates_from_peripherals_to_server;
+
 void ReceptionMode ::init(StorageUnit *in_storage)
 {
   storage = in_storage;
   WiFi.hostname("SinglePeripheralPlatform");
   WiFi.mode(WIFI_AP_STA);
   //WiFi.mode(WIFI_STA);
-  storage->wifi_ssid.trim();
-  storage->wifi_psw.trim();
+  //storage->wifi_ssid.trim();
+ // storage->wifi_psw.trim();
 
   WiFi.begin(storage->wifi_ssid.c_str(), storage->wifi_psw.c_str());
 
   // TODO:: Below line is for testing purpose, and need to be removed in actual code.
-  storage->server_url = "http://192.168.1.3:8090/smart_home";
+  storage->server_url = "http://192.168.1.2:8090/smart_home";
 
   /*
    *  Below commented code line is kept for future reference and debug purpose.
@@ -79,6 +81,11 @@ void ReceptionMode ::start()
       }
     }
 
+    if (checkForRTS())
+    {
+      sendTriggersListToServer();
+    }
+
     if (is_list_sent == false)
       sendPeripheralsListToServer();
 
@@ -109,8 +116,49 @@ void ReceptionMode ::start()
   delay(1000); //Send a request every 1 second
 }
 
+boolean ReceptionMode ::checkForRTS()
+{
+  updates_from_peripherals_to_server = "\"alPeripherals\":[";
+
+  boolean first_instance = true;
+
+  for (int i = 0; i < MAX_NUMBER_OF_PERIPHERALS; i++)
+  {
+    this->selectLine(i);
+    rts[i] = peripheral->getRTS();
+    Serial.printf("RTS ---------------------------------------- %d\n", rts[i]);
+    if (rts[i] == 1)
+    {
+      if (first_instance == false)
+      {
+        updates_from_peripherals_to_server += ",";
+      }
+      first_instance = false;
+      String triggerUpdates = peripheral->getUpdates();
+      Serial.printf("RTS updates start----------------------------------------\n");
+      Serial.println(triggerUpdates);
+      Serial.printf("RTS updates end----------------------------------------\n");
+      updates_from_peripherals_to_server += triggerUpdates;
+    }
+  }
+
+  updates_from_peripherals_to_server += "]";
+
+  if (false == first_instance)
+    return true;
+
+  return false;
+}
+
+void ReceptionMode ::sendTriggersListToServer()
+{
+  String url = (String)storage->server_url + "" + storage->send_trigger_url;
+  sendDevPerListToServer(url, updates_from_peripherals_to_server);
+}
+
 void ReceptionMode ::sendPeripheralsListToServer()
 {
+  String url = (String)storage->server_url + "" + storage->update_peripheral_list_url;
 
   String peripheralsList = "\"alPeripherals\":[";
   for (int i = 0; i < (MAX_NUMBER_OF_PERIPHERALS); i++)
@@ -128,6 +176,11 @@ void ReceptionMode ::sendPeripheralsListToServer()
   }
   peripheralsList += "]";
 
+  sendDevPerListToServer(url, peripheralsList);
+}
+
+void ReceptionMode ::sendDevPerListToServer(String url, String peripheralsList)
+{
   String mac = WiFi.macAddress();
   String device = "{\"device_id\":" + storage->getPlatformDeviceId();
   device += ",\"device_phy_id\":\"" + mac + "\"";
@@ -138,7 +191,7 @@ void ReceptionMode ::sendPeripheralsListToServer()
   Serial.println(device);
 
   HTTPClient http;
-  String url = (String)storage->server_url + "" + storage->update_peripheral_list_url;
+
   http.begin(url);
   http.addHeader("Content-Type", "application/json");
   int httpCode = http.POST(device);
@@ -206,7 +259,7 @@ void ReceptionMode ::gatherPeripherals()
         String dev_id = peripheral->getDeviceRegID();
         Serial.println("Get device ID ");
         Serial.println(dev_id);
-
+        dev_id.trim();
         verifyAndRegisterPeripheral(dev_id, i, 3);
       }
     }
@@ -344,7 +397,8 @@ void ReceptionMode ::updateLocalIPToServer()
 void ReceptionMode::updatePeripherals(String input)
 {
   Serial.println("Update Peripherals");
-  parse(input.c_str());
+  int ret = parse(input.c_str());
+  Serial.printf("############# !!!!!!!!!!!!!!!!!!!!!!!!total Ret val periphrals info received :: %d\n", ret);
   Serial.printf("############# total periphrals info received :: %d\n", total_peripherals);
   for (int i = 0; i < total_peripherals; i++)
   {

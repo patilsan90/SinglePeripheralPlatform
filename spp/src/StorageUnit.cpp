@@ -145,6 +145,8 @@ void StorageUnit::loadConfiguration()
   {
     Serial.println(F("====== Reading to SPIFFS wifi_ssid file ========="));
     this->wifi_ssid = file.readStringUntil('\n');
+    this->wifi_ssid.trim();
+
     Serial.println(this->wifi_ssid);
   }
   file.close();
@@ -159,6 +161,7 @@ void StorageUnit::loadConfiguration()
   {
     Serial.println(F("====== Reading to SPIFFS wifi_psw file ========="));
     this->wifi_psw = file.readStringUntil('\n'); //file.println((String)this->wifi_psw);
+    this->wifi_psw.trim();
     Serial.println(this->wifi_psw);
   }
   file.close();
@@ -173,6 +176,7 @@ void StorageUnit::loadConfiguration()
     Serial.println(F("====== Reading to SPIFFS owner_id file ========="));
     this->owner_id = file.readStringUntil('\n'); // file.println((String)this->owner_id);
     Serial.println(this->owner_id);
+    this->owner_id.trim();
   }
   file.close();
   // Open file for Reading
@@ -185,6 +189,7 @@ void StorageUnit::loadConfiguration()
   {
     Serial.println(F("====== Reading to SPIFFS server_url file ========="));
     this->server_url = file.readStringUntil('\n'); //file.println((String)this->server_url);
+    this->server_url.trim();
     Serial.println(this->server_url);
   }
   file.close();

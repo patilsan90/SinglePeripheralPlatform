@@ -22,6 +22,7 @@ public:
   String update_peripheral_list_url = "/device/update_peripherals_list";
   String register_peripheral_url = "/device/register_peripheral";
   String update_ip_url = "/device/update_ip";
+  String send_trigger_url = "/device/received_trigger_from_peripherals";
 
   int saveConfiguration(String input);
   void loadConfiguration();

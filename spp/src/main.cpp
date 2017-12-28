@@ -28,6 +28,7 @@ void peripheralConnectedIntr();
 void setup()
 {
   pinMode(PIN_PERIPHERAL_ACTIVATE_VCC, OUTPUT);
+  pinMode(PIN_RTS, INPUT);
   digitalWrite(PIN_PERIPHERAL_ACTIVATE_VCC, 0);
   Serial.begin(115200);
   delay(2000);

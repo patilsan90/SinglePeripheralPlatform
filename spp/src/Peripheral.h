@@ -13,6 +13,7 @@
 
 #define NO_RESPONSE ("NO_RESPONSE")
 
+#define CMD_GET_DEVICE_UPDATES ("GDU")
 class Peripheral
 {
 
@@ -32,6 +33,9 @@ public:
   String getDeviceStatus();
 
   String sendUpdates(String cmd);
+  String getUpdates();
+
+  int getRTS();
 };
 
 #endif

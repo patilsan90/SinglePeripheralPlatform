@@ -11,7 +11,7 @@
 #define PIN_MUX_SELECTOR_LINE_2 __OUT__(4)
 #define PIN_MUX_SELECTOR_LINE_3 __OUT__(5)
 
-#define PIN_TX_STATUS __OUT__(14)
+#define PIN_RTS __OUT__(14)
 
 #define PIN_MODE_SELECTOR __IN__(12)
 

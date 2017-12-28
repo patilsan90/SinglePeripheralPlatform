@@ -11,8 +11,9 @@ struct peripheral
 {
     char *json_data;
     char *id;
-} peripherals[1];
+};
 
+extern struct peripheral peripherals[1];
 extern int total_peripherals;
 extern char *key;
 

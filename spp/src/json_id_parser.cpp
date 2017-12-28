@@ -5,6 +5,7 @@
 
 int total_peripherals = 0;
 char *key = PER_ID_STRING;
+struct peripheral peripherals[1];
 
 int parse(const char str[])
 {
@@ -57,11 +58,18 @@ int parse(const char str[])
                 if (str[i] == ',' || str[i] == '}')
                 {
                     temp = (char *)malloc(sizeof(char) * (key_end - key_st));
+                    if (temp == NULL)
+                        return -100;
+
                     strncpy(temp, str + key_st, (key_end - key_st));
+                    temp[(key_end - key_st)]='\0';
 
                     if (!strcmp(temp, key))
                     {
                         peripherals[k].id = (char *)malloc(sizeof(char) * ((val_end - val_st) + 1));
+                        if (peripherals[k].id == NULL)
+                            return -100;
+
                         strncpy(peripherals[k].id, str + val_st, (val_end - val_st));
                         peripherals[k].id[(val_end - val_st)] = '\0';
                     }
